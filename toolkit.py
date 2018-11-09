@@ -17,18 +17,19 @@ def label_docs(docs):
 				  matches the desired label.
 	'''
 	getch = _Getch()
-
-	output_array = np.zeros(len(docs))
+    count = len(docs)
+	output_array = np.zeros(count)
 
 	for i, doc in enumerate(docs):
 		print(doc)
 		while True:
 			response = getch()
-			if response == 'y':
+			if response == '[':
 				output_array[i] = 1
 				break
-			elif response == 'n':
+			elif response == ']':
 				break
+        print('{}/{} completed.'.format(i, count))
 		print()
 	return output_array
 
