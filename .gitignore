@@ -3,4 +3,5 @@ data/*
 *.ipynb_checkpoints/*
 eda.ipynb
 sql_formatting.ipynb
+spark.ipynb
 .env
