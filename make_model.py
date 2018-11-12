@@ -31,13 +31,23 @@ message_df = spark.read.csv('data/labelled_sample_messages.csv',
 lower_udf = udf(pp.lowercase, StringType())
 replace_q_udf = udf(pp.replace_qs, StringType())
 stem_udf = udf(pp.stemmer, StringType()) 
-word_count_udf = udf(pp.word_count, IntegerType())
+count_words_udf = udf(pp.count_words, IntegerType())
+count_verbs_udf = udf(pp.count_verbs, IntegerType())
+check_for_link_udf = udf(pp.check_for_link, IntegerType())
+remove_link_udf = udf(pp.remove_link, StringType())
+split_message_udf = udf(pp.split_message, ArrayType(StringType()))
+
 
 
 # Feature engineering
 lower_df = message_df.withColumn('text', lower_udf(message_df['text']))
-replaced_df = lower_df.withColumn('text', replace_q_udf(lower_df['text']))
-final_df  = replaced_df.withColumn('text', stem_udf(replaced_df['text']))
+link_df = lower_df.withColumn('has_link', check_for_link_udf(lower_df['text']))
+no_link_df = link_df.withColumn('text', remove_link_udf(link_df['text']))
+replaced_df = no_link_df.withColumn('text', replace_q_udf(no_link_df['text']))
+word_count_df = replaced_df.withColumn('word_count', count_words_udf(replaced_df['text']))
+verb_count_df = word_count_df.withColumn('verb_count', count_verbs_udf(word_count_df['text']))
+split_df = verb_count_df.withColumn('words', split_message_udf(verb_count_df['text']))
+stem_df  = replaced_df.withColumn('words', stem_udf(split_df['words']))
 
 # Split data set
 training_df, testing_df = final_df.randomSplit([.75, .25])
