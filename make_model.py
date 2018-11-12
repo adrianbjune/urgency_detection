@@ -1,6 +1,6 @@
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import LogisticRegression, NaiveBayes
-from pyspark.ml.feature import CountVectorizer, Tokenizer, HashingTF, IDF, Word2Vec
+from pyspark.ml.feature import CountVectorizer, Tokenizer, HashingTF, IDF, Word2Vec, VectorAssembler
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
 import preprocessing as pp
@@ -53,12 +53,12 @@ stem_df  = replaced_df.withColumn('words', stem_udf(split_df['words']))
 training_df, testing_df = final_df.randomSplit([.75, .25])
 
 # Make Spark ML pipeline using a NaiveBayes classifier (for now)
-tokenizer = Tokenizer(inputCol='text', outputCol='words')
-hashingTF = HashingTF(inputCol=tokenizer.getOutputCol(), outputCol='features')
+hashingTF = HashingTF(inputCol='words', outputCol='word_hash')
 idf = IDF(minDocFreq=1, inputCol=hashingTF.getOutputCol(), outputCol='tf-idf')
-nb = NaiveBayes(featuresCol=idf.getOutputCol())
+va = VectorAssembler(inputCols=['has_link', 'word_count', 'verb_count', 'words'])
+nb = NaiveBayes(featuresCol=va.getOutputCol())
 
-pipeline = Pipeline(stages=[tokenizer, hashingTF, idf, nb])
+pipeline = Pipeline(stages=[tokenizer, hashingTF, idf, va, nb])
 
 
 # Fit model on training data
