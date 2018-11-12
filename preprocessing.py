@@ -28,3 +28,30 @@ def word_count(message):
 # Doesn't take into account upper case letters, so use after lowercase
 def replace_qs(message):
     return re.sub(r'[a-z0-9]{1}\?[a-z0-9]{1}', (lambda x: x.group(0)[0]+"'"+x.group(0)[2]), message)
+
+# Function to split a message into a list using NLTK word_tokenize
+# Takes in a message as a string and returns a list of words
+def split_message(message):
+    return nltk.word_tokenize(message)
+
+# Function to check if a message comtains a link
+# Takes in a message as a string and returns a 1 if the message contains a link
+# or a 0 if it does not.
+def check_for_link(message):
+    if re.search(r'<http.*>', message):
+        return 1
+    else:
+        return 0
+
+# Function to remove links from a message
+# Takes in a message as a string and returns a message as a string but without the link
+# Returns the message if there is no link
+def remove_link(message):
+    return re.sub(r'<http.+>', '', message)
+
+# Function to count how many verbs are in a message
+# Takes in a list of words and returns a count of how many verbs are in the message
+def count_verbs(message):
+    words_pos = nltk.pos_tag(message)
+    is_verb = [x[1]=='VB' for x in words_pos]
+    return np.sum(is_verb)
