@@ -28,8 +28,8 @@ training_df, testing_df = final_df.randomSplit([.75, .25])
 # Make Spark ML pipeline using a NaiveBayes classifier (for now)
 tokenizer = Tokenizer(inputCol='text', outputCol='words')
 hashingTF = HashingTF(inputCol=tokenizer.getOutputCol(), outputCol='features')
-idf = IDF(minDocFreq=1, inputCol=hashingTF.getOutputCol(), outputCol='idf')
-nb = NaiveBayes()
+idf = IDF(minDocFreq=1, inputCol=hashingTF.getOutputCol(), outputCol='tf-idf')
+nb = NaiveBayes(featuresCol=idf.getOUtputCol())
 
 pipeline = Pipeline(stages=[tokenizer, hashingTF, idf, nb])
 
