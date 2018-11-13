@@ -58,9 +58,9 @@ def remove_link(message):
 
 # Function to count how many verbs are in a message
 # Takes in a list of words and returns a count of how many verbs are in the message
-# STRING -> INT
+# LIST -> INT
 def count_verbs(message):
     words_pos = nltk.pos_tag(message)
     is_verb = [x[1]=='VB' for x in words_pos]
-    return np.sum(is_verb)
+    return sum(is_verb)
 

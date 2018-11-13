@@ -30,7 +30,7 @@ message_df = spark.read.csv('data/labelled_sample_messages.csv',
 # Create UDFs for Spark
 lower_udf = udf(pp.lowercase, StringType())
 replace_q_udf = udf(pp.replace_qs, StringType())
-stem_udf = udf(pp.stemmer, StringType()) 
+stem_udf = udf(pp.stemmer, ArrayType(StringType()))
 count_words_udf = udf(pp.count_words, IntegerType())
 count_verbs_udf = udf(pp.count_verbs, IntegerType())
 check_for_link_udf = udf(pp.check_for_link, IntegerType())
@@ -45,20 +45,20 @@ link_df = lower_df.withColumn('has_link', check_for_link_udf(lower_df['text']))
 no_link_df = link_df.withColumn('text', remove_link_udf(link_df['text']))
 replaced_df = no_link_df.withColumn('text', replace_q_udf(no_link_df['text']))
 word_count_df = replaced_df.withColumn('word_count', count_words_udf(replaced_df['text']))
-verb_count_df = word_count_df.withColumn('verb_count', count_verbs_udf(word_count_df['text']))
-split_df = verb_count_df.withColumn('words', split_message_udf(verb_count_df['text']))
-stem_df  = replaced_df.withColumn('words', stem_udf(split_df['words']))
+split_df = word_count_df.withColumn('words', split_message_udf(word_count_df['text']))
+verb_count_df = split_df.withColumn('verb_count', count_verbs_udf(split_df['words']))
+stem_df  = verb_count_df.withColumn('words', stem_udf(verb_count_df['words']))
 
 # Split data set
-training_df, testing_df = final_df.randomSplit([.75, .25])
+training_df, testing_df = stem_df.randomSplit([.75, .25])
 
 # Make Spark ML pipeline using a NaiveBayes classifier (for now)
 hashingTF = HashingTF(inputCol='words', outputCol='word_hash')
 idf = IDF(minDocFreq=1, inputCol=hashingTF.getOutputCol(), outputCol='tf-idf')
-va = VectorAssembler(inputCols=['has_link', 'word_count', 'verb_count', 'words'])
+va = VectorAssembler(inputCols=['has_link', 'word_count', 'verb_count', 'tf-idf'])
 nb = NaiveBayes(featuresCol=va.getOutputCol())
 
-pipeline = Pipeline(stages=[tokenizer, hashingTF, idf, va, nb])
+pipeline = Pipeline(stages=[hashingTF, idf, va, nb])
 
 
 # Fit model on training data
