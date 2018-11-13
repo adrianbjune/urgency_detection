@@ -74,3 +74,14 @@ def count_verbs(message):
     is_verb = [x[1]=='VB' for x in words_pos]
     return sum(is_verb)
 
+# Function to check if there is a Slack user tag in the message
+# Takes in a message as a string and returns 1 if there is a tag and 0 if not
+# STRING -> INT
+def check_for_tag(message):
+    return int(bool(re.search(r'<@\S{9}>', message)))
+
+# Function to remove Slack tags from a message
+# Takes in a message as a string and returns the message with any found tags removed.
+# STRING -> STRING
+def remove_tags(message):
+    return re.sub(r'<@\S{9}>', '', message)
