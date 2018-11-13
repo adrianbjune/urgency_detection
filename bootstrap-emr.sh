@@ -27,6 +27,8 @@ git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
 # Add Autoenv to source
 echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
 
+
+
 # Install Anaconda
 bash $HOME/anaconda/anaconda.sh -u -b -p $HOME/anaconda
 

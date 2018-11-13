@@ -20,12 +20,12 @@ aws emr create-default-roles
 aws s3 cp bootstrap-emr.sh s3://$1/scripts/bootstrap-emr.sh
 
 aws emr create-cluster \
-    --name PySparkCluster \
+    --name KettleSparkCluster \
     --release-label emr-5.8.0 \
     --applications Name=Spark \
     --ec2-attributes KeyName=$2 \
     --use-default-roles \
     --instance-groups \
-      InstanceGroupType=MASTER,InstanceCount=1,InstanceType=m3.xlarge \
-      InstanceGroupType=CORE,InstanceCount=$3,InstanceType=m3.xlarge \
+      InstanceGroupType=MASTER,InstanceCount=1,InstanceType=m4.16xlarge \
+      InstanceGroupType=CORE,InstanceCount=$3,InstanceType=m4.16xlarge \
     --bootstrap-actions Path=s3://$1/scripts/bootstrap-emr.sh
