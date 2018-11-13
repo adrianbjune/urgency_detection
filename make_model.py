@@ -36,6 +36,8 @@ count_verbs_udf = udf(pp.count_verbs, IntegerType())
 check_for_link_udf = udf(pp.check_for_link, IntegerType())
 remove_link_udf = udf(pp.remove_link, StringType())
 split_message_udf = udf(pp.split_message, ArrayType(StringType()))
+check_q_udf = udf(pp.check_for_q, IntegerType())
+drop_emojis_udf = udf(pp.drop_emojis, StringType())
 
 
 
@@ -44,13 +46,18 @@ lower_df = message_df.withColumn('text', lower_udf(message_df['text']))
 link_df = lower_df.withColumn('has_link', check_for_link_udf(lower_df['text']))
 no_link_df = link_df.withColumn('text', remove_link_udf(link_df['text']))
 replaced_df = no_link_df.withColumn('text', replace_q_udf(no_link_df['text']))
-word_count_df = replaced_df.withColumn('word_count', count_words_udf(replaced_df['text']))
+no_emojis_df = replaced_df.withColumn('text', drop_emojis_udf(replaced_df['text']))
+word_count_df = no_emojis_df.withColumn('word_count', count_words_udf(no_emojis_df['text']))
 split_df = word_count_df.withColumn('words', split_message_udf(word_count_df['text']))
 verb_count_df = split_df.withColumn('verb_count', count_verbs_udf(split_df['words']))
-stem_df  = verb_count_df.withColumn('words', stem_udf(verb_count_df['words']))
+has_q_df = verb_count_df.withColumn('has_q', check_q_udf(verb_count_df['text']))
+stem_df  = has_q_df.withColumn('words', stem_udf(has_q_df['words']))
+no_dupes_df = stem_df.dropDuplicates(['words'])
+no_emptys_df = no_dupes_df.filter(no_dupes_df['word_count']>1)
+
 
 # Split data set
-training_df, testing_df = stem_df.randomSplit([.75, .25])
+training_df, testing_df = no_emptys_df.randomSplit([.75, .25])
 
 # Make Spark ML pipeline using a NaiveBayes classifier (for now)
 hashingTF = HashingTF(inputCol='words', outputCol='word_hash')

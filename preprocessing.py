@@ -44,10 +44,20 @@ def split_message(message):
 # or a 0 if it does not.
 # STRING -> INT
 def check_for_link(message):
-    if re.search(r'<http.*>', message):
-        return 1
-    else:
-        return 0
+    return int(bool(re.search(r'<http.*>', message)))
+
+# Function to check if a message has a question mark in it
+# Takes in a message as a string and returns a 1 if the message contains '?' or
+# 0 if it does not.
+# STRING -> INT
+def check_for_q(message):
+    return int(bool(re.search(r'.*\?.*', message)))
+
+# Function to remove Slack emojis from a message. 
+# Takes in a message as a string and returns the same message just without any Slack emojis
+# STRING -> STRING
+def drop_emojis(message):
+    return re.sub(r':\S*:', '', message)
 
 # Function to remove links from a message
 # Takes in a message as a string and returns a message as a string but without the link
