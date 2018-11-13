@@ -18,7 +18,7 @@ def label_docs(docs):
     '''
     getch = _Getch()
     count = len(docs)
-    output_array = np.zeros(lcount)
+    output_array = np.zeros(count)
 
     for i, doc in enumerate(docs):
         print(doc)
@@ -29,13 +29,13 @@ def label_docs(docs):
                 break
             elif response == ']':
                 break
-            elif response == ['q']:
+            elif response == 'q':
                 break
-        if response == ['q']:
+        if response == 'q':
             break
         print('{}/{} completed.'.format(i+1, count))
         print()
-    return output_array, i+1
+    return output_array, i
 
 # Function to parse one Slack event log line
 def parse_one_line(line):
