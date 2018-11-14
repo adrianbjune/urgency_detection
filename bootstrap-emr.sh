@@ -21,13 +21,6 @@ sudo chown hadoop:hadoop /usr/share/nltk_data
 # Download Anaconda
 wget -S -T 10 -t 5 https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh -O $HOME/anaconda/anaconda.sh
 
-# Download Autoenv
-git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
-
-# Add Autoenv to source
-echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
-
-
 
 # Install Anaconda
 bash $HOME/anaconda/anaconda.sh -u -b -p $HOME/anaconda
