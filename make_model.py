@@ -3,6 +3,8 @@ from pyspark.ml.classification import MultilayerPerceptronClassifier
 from pyspark.ml.feature import CountVectorizer, Tokenizer, HashingTF, IDF, Word2Vec, VectorAssembler
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 import preprocessing as pp
 import pyspark as ps
 
@@ -62,6 +64,7 @@ no_dupes_df = stem_df.dropDuplicates(['words'])
 no_emptys_df = no_dupes_df.filter(no_dupes_df['word_count']>1)
 
 
+
 # Split data set
 training_df, testing_df = no_emptys_df.randomSplit([.75, .25])
 
@@ -71,13 +74,25 @@ idf = IDF(minDocFreq=1, inputCol=hashingTF.getOutputCol(), outputCol='tf-idf')
 va = VectorAssembler(inputCols=['has_link', 'verb_count', 'tf-idf', 'word_count', 'has_q', 'has_tag'])
 mp = MultilayerPerceptronClassifier(featuresCol=va.getOutputCol(), layers=[505, 250, 100, 50, 25, 10, 5, 2])
 
+# Create param grid
+grid = ParamGridBuilder().addGrid(mp.maxIter, [50,100,200]).addGrid(mp.tol, [.0000001, .000001, .0001, .01]).addGrid(mp.stepSize, [.001, .01, .1]).build()
+
+evaluator = BinaryClassificationEvaluator(rawPredictionCol='prediction')
+
 pipeline = Pipeline(stages=[hashingTF, idf, va, mp])
+
+cv = CrossValidator(estimator=pipeline, estimatorParamMaps=grid, evaluator=evaluator, parallelism=4)
+
+cvModel = cv.fit(no_emptys_df)
+
+cvModel.write().save('best_mlpc_model')
+
 
 
 # Fit model on training data
-model = pipeline.fit(training_df)
+#model = pipeline.fit(training_df)
 
 # Predict on test data
-results = model.transform(testing_df)
-predictions = results.select('text', 'label', 'prediction', 'probability')
+#results = model.transform(testing_df)
+#predictions = results.select('text', 'label', 'prediction', 'probability')
 

@@ -6,13 +6,13 @@
 #   number of slave instances
 #      ex. bash launch_cluster.sh mybucket mypem 2
 
-# This script assumes that the file bootstrap-emr.sh is 
+# This script assumes that the file bootstrap-emr.sh is
 #   in your current directory.
 
 # Requires the awscli to be set up, need to have correct default region configured
 # Run `aws configure` to set this up
 
-# require for first time cluster creators. 
+# require for first time cluster creators.
 # you can comment this out if you are sure
 # that the default emr roles already exist
 aws emr create-default-roles
@@ -20,7 +20,8 @@ aws emr create-default-roles
 aws s3 cp bootstrap-emr.sh s3://$1/scripts/bootstrap-emr.sh
 
 aws emr create-cluster \
-    --name KettleSparkCluster \
+    --name PySparkCluster \
+    --ebs-root-volume-size 10 \
     --release-label emr-5.8.0 \
     --applications Name=Spark \
     --ec2-attributes KeyName=$2 \
