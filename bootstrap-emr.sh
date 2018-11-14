@@ -31,6 +31,9 @@ export PATH=$HOME/anaconda/bin:$PATH
 echo -e "\n\n# Anaconda" >> $HOME/.bashrc
 echo "export PATH=$HOME/anaconda/bin:$PATH" >> $HOME/.bashrc
 
+# Download pre-processing script from s3 bucket
+aws s3 cp s3://adrian-kettle-capstone/preprocessing.py ~/
+
 # Download NLTK libraries
 $HOME/anaconda/bin/python -c "import nltk; \
 nltk.download('stopwords', '/usr/share/nltk_data'); \
