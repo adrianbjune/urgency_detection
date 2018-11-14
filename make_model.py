@@ -11,12 +11,12 @@ import sys
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage: wordcount  ", file=sys.stderr)
         exit(-1)
         
-    input_file_path = sys.argv[1]
-    output_file_path = sys.argv[2]
+    input_file_path = sys.argv[2]
+    output_file_path = sys.argv[3]
     # Setup Spark Context
     sc = ps.SparkContext(appName="kettle")
 
