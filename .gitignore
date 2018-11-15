@@ -4,4 +4,5 @@ data/*
 eda.ipynb
 sql_formatting.ipynb
 spark.ipynb
+keras.ipynb
 .env

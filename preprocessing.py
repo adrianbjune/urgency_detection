@@ -1,5 +1,4 @@
 import pandas as pd
-import pyspark as ps
 import numpy as np
 import re
 import nltk
