@@ -35,10 +35,14 @@ echo "export PATH=$HOME/anaconda/bin:$PATH" >> $HOME/.bashrc
 aws s3 cp s3://adrian-kettle-capstone/preprocessing.py $HOME/packages/
 
 # Add packages to the current path
-export PATH=$HOME/packages:$PATH
+export PATH=$HOME/packages:$PATH >> $HOME/.bashrc
 
+export PYTHONPATH=$HOME/packages:$PYTHONPATH 
+echo "export PYTHONPATH=$HOME/packages:$PYTHONPATH" >> $HOME/.bashrc
 # Add packages to PATH for future sessions via .bashrc
 echo "export PATH=$HOME/packages:$PATH" >> $HOME/.bashrc
+
+
 
 # Download NLTK libraries
 $HOME/anaconda/bin/python -c "import nltk; \
