@@ -1,4 +1,4 @@
-${SPARK_HOME}/bin/spark-submit \
+/usr/bin/spark-submit \
 --conf spark.sql.warehouse.dir="file:///tmp/spark-warehouse" \
 --master yarn \
 --deploy-mode cluster \
