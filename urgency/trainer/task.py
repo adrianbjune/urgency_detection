@@ -20,7 +20,7 @@ import argparse
 import json
 import os
 
-import model
+import trainer.model as model
 
 import tensorflow as tf
 
