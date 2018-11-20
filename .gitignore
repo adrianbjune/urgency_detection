@@ -1,5 +1,6 @@
 *__pycache__/
 data/*
+urgency/data/*
 *.ipynb_checkpoints/*
 eda.ipynb
 sql_formatting.ipynb
