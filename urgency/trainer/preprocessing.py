@@ -4,6 +4,7 @@ import re
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
+import tensorflow as tf
 
 
 # Lemmatizer function 
