@@ -6,6 +6,8 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 import tensorflow as tf
 
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
 
 # Lemmatizer function 
 # Takes in a message as a list of words and returns a list of stemmed words

@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-REQUIRED_PACKAGES = ['nltk', 're', 'pandas', 'numpy', 'tensorflow', 'tensorflow_hub']
+REQUIRED_PACKAGES = ['nltk', 'pandas', 'numpy', 'tensorflow', 'tensorflow_hub', 'google-cloud-storage']
 
 setup(
     name='trainer',

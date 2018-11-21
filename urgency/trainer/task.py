@@ -96,6 +96,16 @@ if __name__ == '__main__':
         help = 'Is the input data format csv or tfrecord?',
         default = 'csv'
     )
+    parser.add_argument(
+        '--bucket',
+        help = 'GCS bucket that the data is coming from',
+        default = 'urgency-detection'
+    )
+    parser.add_argument(
+        '--project',
+        help = 'GCP project that the bucket is on',
+        default = 'urgency-detection'
+    )
 
     args = parser.parse_args()
     arguments = args.__dict__

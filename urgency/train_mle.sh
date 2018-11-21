@@ -11,9 +11,10 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --module-name=trainer.task \
     --package-path=${MODEL_DIR}/trainer \
     --job-dir=$OUTDIR/job \
-    --region $REGION \
+    --config=${MODEL_DIR}/config.yaml \
+    --region=${REGION} \
     -- \
     --output_dir=$OUTDIR/output \
     --train_steps=5000 \
-    --train_data_path=${DATA_BUCKET}/labelled_train.csv \
-    --eval_data_path=${DATA_BUCKET}/labelled_test.csv 
+    --train_data_path=labelled_train.csv \
+    --eval_data_path=labelled_test.csv 

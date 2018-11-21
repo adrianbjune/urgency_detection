@@ -3,6 +3,7 @@ import numpy as np
 import trainer.preprocessing as pp
 import tensorflow_hub as hub
 import pandas as pd
+from google.cloud import storage
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -25,7 +26,24 @@ INPUT_COLUMNS = ['text', 'link', 'tag', 'question', 'word_count', 'verb_count']
 def my_auc(labels, predictions):
     return {'auc': tf.metrics.auc(labels, predictions['class_ids'])}
 
-def read_dataset(filename, mode, batch_size=256):
+def read_csv(project, bucket, path):
+    client = storage.Client(project=project)
+    bucket = client.get_bucket(bucket)
+    blob = bucket.get_blob(path)
+    
+    text_array = blob.download_as_string().decode('utf-8').split('\n')
+    ids = []
+    messages = []
+    labels = []
+    for line in text_array:
+        comma_split = line.split(',')
+        ids.append(comma_split[0])
+        labels.append(int(float(comma_split[-1])))
+        messages.append(''.join(comma_split[1:-1]))
+    df_dict = {'id':ids, 'text':messages, 'label':labels}
+    return pd.DataFrame.from_dict(df_dict)
+
+def read_dataset(project, bucket, path, mode, batch_size=256):
     def _input_fn():
 #         def decode_csv(value_column):
 #             print('value_column:')
@@ -56,7 +74,7 @@ def read_dataset(filename, mode, batch_size=256):
 #         dataset = decode_csv(data)
 #         print(dataset)
 
-        data_pd = pd.read_csv(filename, names=CSV_COLUMNS)
+        data_pd = read_csv(project, bucket, path)
         dataset = add_engineered(data_pd)
         
         if mode == tf.estimator.ModeKeys.TRAIN:
@@ -142,14 +160,18 @@ def train_and_evaluate(args):
     estimator = build_estimator(args['output_dir'], args['hidden_units'].split(' '))
     train_spec = tf.estimator.TrainSpec(
         input_fn = read_dataset(
-            filename = args['train_data_path'],
+            project = args['project'],
+            bucket = args['bucket'],
+            path = args['train_data_path'],
             mode = tf.estimator.ModeKeys.TRAIN,
             batch_size = args['train_batch_size']),
         max_steps = args['train_steps'])
     exporter = tf.estimator.LatestExporter('exporter', serving_input_fn)
     eval_spec = tf.estimator.EvalSpec(
         input_fn = read_dataset(
-            filename = args['eval_data_path'],
+            project = args['project'],
+            bucket = args['bucket'],
+            path = args['eval_data_path'],
             mode = tf.estimator.ModeKeys.EVAL,
             batch_size = args['eval_batch_size']),
         steps = 100,
