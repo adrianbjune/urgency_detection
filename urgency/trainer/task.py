@@ -48,7 +48,7 @@ if __name__ == '__main__':
         '--train_steps',
         help = 'Steps to run the training job for',
         type = int,
-        default = 5000
+        default = 10000
     )
     parser.add_argument(
         '--eval_steps',

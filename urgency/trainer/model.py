@@ -153,5 +153,7 @@ def train_and_evaluate(args):
             mode = tf.estimator.ModeKeys.EVAL,
             batch_size = args['eval_batch_size']),
         steps = 100,
-        exporters = exporter)
+        exporters = exporter,
+        start_delay_secs=args['eval_delay_secs'],
+        throttle_secs=args['eval_delay_secs'])
     tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
