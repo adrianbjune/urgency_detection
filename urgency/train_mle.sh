@@ -15,6 +15,6 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --region=${REGION} \
     -- \
     --output_dir=$OUTDIR/output \
-    --train_steps=5000 \
+    --train_steps=100000 \
     --train_data_path=labelled_train.csv \
     --eval_data_path=labelled_test.csv 
