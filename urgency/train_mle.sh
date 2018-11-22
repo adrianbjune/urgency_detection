@@ -18,4 +18,4 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --train_steps=5000 \
     --train_data_path=labelled_train.csv \
     --eval_data_path=labelled_test.csv \
-    --hidden_units="32 4"
+    --hidden_units="128 32 4"

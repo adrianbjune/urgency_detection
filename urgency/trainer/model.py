@@ -14,16 +14,16 @@ DEFAULTS = [['na'], [''], [0]]
 TF_INPUT_COLUMNS = [
      #hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1'),
      #tf.placeholder(tf.string, [None],'text'), # Possibly the wrong column type?
-     tf.feature_column.numeric_column('link'),
-     tf.feature_column.numeric_column('tag'),
-     tf.feature_column.numeric_column('question'),
-     tf.feature_column.numeric_column('word_count'),
-     tf.feature_column.numeric_column('verb_count')
+     tf.feature_column.numeric_column('link', dtype=tf.int64),
+     tf.feature_column.numeric_column('tag', dtype=tf.int64),
+     tf.feature_column.numeric_column('question', dtype=tf.int64),
+     tf.feature_column.numeric_column('word_count', dtype=tf.int64),
+     tf.feature_column.numeric_column('verb_count', dtype=tf.int64)
 ]
 
 INPUT_COLUMNS = ['text', 'link', 'tag', 'question', 'word_count', 'verb_count']
 
-embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1')
+#embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1')
 
 def my_auc(labels, predictions):
     return {'auc': tf.metrics.auc(labels, predictions['class_ids'])}
@@ -46,7 +46,7 @@ def read_csv(project, bucket, path):
     return pd.DataFrame.from_dict(df_dict)
 
 def read_dataset(project, bucket, path, mode, batch_size=256):
-    def _input_fn():
+#    def _input_fn():
 #         def decode_csv(value_column):
 #             print('value_column:')
 #             print(value_column)
@@ -76,33 +76,34 @@ def read_dataset(project, bucket, path, mode, batch_size=256):
 #         dataset = decode_csv(data)
 #         print(dataset)
 
-        data_pd = read_csv(project, bucket, path)
-        dataset = add_engineered(data_pd)
+#         data_pd = read_csv(project, bucket, path)
+#         dataset = add_engineered(data_pd)
         
-        if mode == tf.estimator.ModeKeys.TRAIN:
-            num_epochs = None
-            dataset = dataset.shuffle(buffer_size = 10*batch_size)
-        else:
-            num_epochs = 1
+#         if mode == tf.estimator.ModeKeys.TRAIN:
+#             num_epochs = None
+#             dataset = dataset.shuffle(buffer_size = 10*batch_size)
+#         else:
+#             num_epochs = 1
         
-        dataset = dataset.repeat(num_epochs).batch(batch_size)
-        batch_features, batch_labels = dataset.make_one_shot_iterator().get_next()
+#         dataset = dataset.repeat(num_epochs).batch(batch_size)
+#         batch_features, batch_labels = dataset.make_one_shot_iterator().get_next()
      
-        return batch_features, batch_labels
+#         return batch_features, batch_labels
     
     data_pd = read_csv(project, bucket, path)
     dataset = add_engineered(data_pd)
-    print(dataset.head())
+    print(dataset.info())
+    
     if mode == tf.estimator.ModeKeys.TRAIN:
 #         num_epochs = None
 #         dataset = dataset.shuffle(buffer_size = 10*batch_size)
         return tf.estimator.inputs.pandas_input_fn(
-            x=dataset, y=dataset['label'],
+            x=dataset[['text', 'link', 'tag', 'question', 'word_count', 'verb_count']], y=dataset['label'],
             num_epochs=None, shuffle=True,
             batch_size=batch_size)
     else:
         return tf.estimator.inputs.pandas_input_fn(
-            x=dataset, y=dataset['label'],
+            x=dataset[['text', 'link', 'tag', 'question', 'word_count', 'verb_count']], y=dataset['label'],
             num_epochs=1, shuffle=False,
             batch_size=batch_size)
         #num_epochs = 1
@@ -149,21 +150,23 @@ def add_engineered(data_pd):
 
 
 def serving_input_fn():
-    features = {#'text':tf.placeholder(tf.string, [None]),
-                'link':tf.placeholder(tf.int32, [None]),
-                'tag':tf.placeholder(tf.int32, [None]),
-                'question':tf.placeholder(tf.int32, [None]),
-                'word_count':tf.placeholder(tf.int32, [None]),
-                'verb_count':tf.placeholder(tf.int32, [None])}
+    features = {'text':tf.placeholder(tf.string, [None]),
+                'link':tf.placeholder(tf.int64, [None]),
+                'tag':tf.placeholder(tf.int64, [None]),
+                'question':tf.placeholder(tf.int64, [None]),
+                'word_count':tf.placeholder(tf.int64, [None]),
+                'verb_count':tf.placeholder(tf.int64, [None])}
+    
     return tf.estimator.export.ServingInputReceiver(features, features)
+    
     
     
 def build_estimator(model_dir, hidden_units):
     # Input columns
     (link, tag, question, word_count, verb_count) = TF_INPUT_COLUMNS
-    
-    features = [link, tag, question, word_count, verb_count]#[text, link, tag, question, word_count, verb_count]
-    print('embedded_text: {}\n'.format(embedded_text))
+    embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1')
+    features = [embedded_text, link, tag, question, word_count, verb_count]#[text, link, tag, question, word_count, verb_count]
+    #print('embedded_text: {}\n'.format(embedded_text))
     print('link: {}\n'.format(link))
     print('tag: {}\n'.format(tag))
     print('question: {}\n'.format(question))
