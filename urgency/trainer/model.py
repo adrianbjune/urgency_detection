@@ -12,8 +12,8 @@ LABEL_COLUMN = 'label'
 DEFAULTS = [['na'], [''], [0]]
 
 TF_INPUT_COLUMNS = [
-     hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1'),
-     #tf.feature_column.string_column('text'), # Possibly the wrong column type?
+     #hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1'),
+     #tf.placeholder(tf.string, [None],'text'), # Possibly the wrong column type?
      tf.feature_column.numeric_column('link'),
      tf.feature_column.numeric_column('tag'),
      tf.feature_column.numeric_column('question'),
@@ -22,6 +22,8 @@ TF_INPUT_COLUMNS = [
 ]
 
 INPUT_COLUMNS = ['text', 'link', 'tag', 'question', 'word_count', 'verb_count']
+
+embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1')
 
 def my_auc(labels, predictions):
     return {'auc': tf.metrics.auc(labels, predictions['class_ids'])}
@@ -87,7 +89,24 @@ def read_dataset(project, bucket, path, mode, batch_size=256):
         batch_features, batch_labels = dataset.make_one_shot_iterator().get_next()
      
         return batch_features, batch_labels
-    return _input_fn
+    
+    data_pd = read_csv(project, bucket, path)
+    dataset = add_engineered(data_pd)
+    print(dataset.head())
+    if mode == tf.estimator.ModeKeys.TRAIN:
+#         num_epochs = None
+#         dataset = dataset.shuffle(buffer_size = 10*batch_size)
+        return tf.estimator.inputs.pandas_input_fn(
+            x=dataset, y=dataset['label'],
+            num_epochs=None, shuffle=True,
+            batch_size=batch_size)
+    else:
+        return tf.estimator.inputs.pandas_input_fn(
+            x=dataset, y=dataset['label'],
+            num_epochs=1, shuffle=False,
+            batch_size=batch_size)
+        #num_epochs = 1
+    #return _input_fn
         
 
         
@@ -120,28 +139,36 @@ def add_engineered(data_pd):
     data_pd['split_text'] = data_pd['text'].apply(pp.split_message)
     data_pd['verb_count'] = data_pd['split_text'].apply(pp.count_verbs)
     
+    return data_pd
     
     
-    features = {col:tf.cast(data_pd[col], tf.int32) for col in INPUT_COLUMNS[1:]}
-    features['text'] = tf.cast(data_pd['text'], tf.string)
-    labels = tf.cast(data_pd['label'], tf.int32)
-    return tf.data.Dataset.from_tensor_slices((features, labels))
+#     features = {col:tf.cast(data_pd[col], tf.int32) for col in INPUT_COLUMNS}
+#     features['text'] = tf.cast(data_pd['text'], tf.string)
+#     labels = tf.cast(data_pd['label'], tf.int32)
+#     return tf.data.Dataset.from_tensor_slices((features, labels))
 
 
 def serving_input_fn():
-    features = {'text':tf.placeholder(tf.string, [None]),
+    features = {#'text':tf.placeholder(tf.string, [None]),
                 'link':tf.placeholder(tf.int32, [None]),
                 'tag':tf.placeholder(tf.int32, [None]),
                 'question':tf.placeholder(tf.int32, [None]),
                 'word_count':tf.placeholder(tf.int32, [None]),
                 'verb_count':tf.placeholder(tf.int32, [None])}
-    return tf.estimator.export.ServingInputReceiver(features, features.copy())
+    return tf.estimator.export.ServingInputReceiver(features, features)
     
     
 def build_estimator(model_dir, hidden_units):
     # Input columns
-    (text, link, tag, question, word_count, verb_count) = TF_INPUT_COLUMNS
-    features = [text, link, tag, question, word_count, verb_count]
+    (link, tag, question, word_count, verb_count) = TF_INPUT_COLUMNS
+    
+    features = [link, tag, question, word_count, verb_count]#[text, link, tag, question, word_count, verb_count]
+    print('embedded_text: {}\n'.format(embedded_text))
+    print('link: {}\n'.format(link))
+    print('tag: {}\n'.format(tag))
+    print('question: {}\n'.format(question))
+    print('word_count: {}\n'.format(word_count))
+    print('verb_count: {}\n'.format(verb_count))
     estimator = tf.estimator.DNNClassifier(
         hidden_units = hidden_units,
         feature_columns = features,
@@ -157,7 +184,9 @@ def build_estimator(model_dir, hidden_units):
     
 
 def train_and_evaluate(args):
+    print('Building estimator...\n')
     estimator = build_estimator(args['output_dir'], args['hidden_units'].split(' '))
+    print('Building training spec...\n')
     train_spec = tf.estimator.TrainSpec(
         input_fn = read_dataset(
             project = args['project'],
@@ -166,7 +195,10 @@ def train_and_evaluate(args):
             mode = tf.estimator.ModeKeys.TRAIN,
             batch_size = args['train_batch_size']),
         max_steps = args['train_steps'])
+    print('Building exporters...\n')
     exporter = tf.estimator.LatestExporter('exporter', serving_input_fn)
+    final_exporter = tf.estimator.FinalExporter('final', serving_input_fn)
+    print('Building evaluation spec...')
     eval_spec = tf.estimator.EvalSpec(
         input_fn = read_dataset(
             project = args['project'],
@@ -175,7 +207,8 @@ def train_and_evaluate(args):
             mode = tf.estimator.ModeKeys.EVAL,
             batch_size = args['eval_batch_size']),
         steps = 100,
-        exporters = exporter,
+        exporters = [exporter,final_exporter],
         start_delay_secs=args['eval_delay_secs'],
         throttle_secs=args['eval_delay_secs'])
+    print('Training and evaluating...\n')
     tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
