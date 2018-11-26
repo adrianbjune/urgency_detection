@@ -34,7 +34,7 @@ params = {'tfidf__max_features':[500,1000],
           'mlp__max_iter':[10000]}
 
 model = RandomizedSearchCV(estimator=pipeline, param_distributions=params, 
-                           n_iter=30, n_jobs=-1, verbose=4)
+                           n_iter=30, n_jobs=-1, verbose=4, scoring='f1_weighted')
 
 model.fit(X, y)
 
