@@ -66,7 +66,7 @@ class _Getch:
         return ch
         
 
-unlabelled = pd.read_csv('data/first_unlabelled.csv')
+unlabelled = pd.read_csv('data/no_frat.csv')
 labelled = pd.read_csv('data/5_labelled.csv')
 
 labels, idx = label_docs(unlabelled['text'].values)
@@ -77,6 +77,6 @@ new_labelled['label'] = labels[:idx]
 labelled = labelled.append(new_labelled)
 labelled.to_csv('data/5_labelled.csv', index=False)
 
-unlabelled.iloc[idx:].to_csv('data/first_unlabelled.csv', index=False)
+unlabelled.iloc[idx:].to_csv('data/no_frat.csv', index=False)
 
 print('Thanks for playing!')
