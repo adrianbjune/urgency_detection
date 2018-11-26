@@ -4,7 +4,6 @@ import pipeline as pipe
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from imblearn.over_sampling import SMOTE
 import pickle
 
 pd.set_option('mode.chained_assignment',None)
