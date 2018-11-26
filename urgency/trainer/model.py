@@ -46,50 +46,7 @@ def read_csv(project, bucket, path):
     return pd.DataFrame.from_dict(df_dict)
 
 def read_dataset(project, bucket, path, mode, batch_size=256):
-#    def _input_fn():
-#         def decode_csv(value_column):
-#             print('value_column:')
-#             print(value_column)
-#             print(type(value_column))
-#             # decode_csv is returning empty tensors for every line?
-#             columns = tf.decode_csv(value_column, record_defaults=DEFAULTS)
-#             print('columns:')
-#             print(columns)
-#             print(type(columns))
-#             features = dict(zip(CSV_COLUMNS, columns))
-#             label = features.pop(LABEL_COLUMN)
-#             return add_engineered(features), label
-#         #print(filename)
-#         filename_tf = tf.constant([filename])
-#         #print('filename:')
-#         #print(filename_tf)
-#         #print(type(filename_tf))
-#         #test=tf.data.TextLineDataset([filename])
-#         #print('input:')
-#         #print(test.output_shapes)
-#         #print(type(test))
-#         #dataset = tf.data.TextLineDataset(filename_tf)
-        
-#         with open(filename) as f:
-#             lines = f.readlines()
-#         data = list(map((lambda x: tf.constant(x)), lines))
-#         dataset = decode_csv(data)
-#         print(dataset)
 
-#         data_pd = read_csv(project, bucket, path)
-#         dataset = add_engineered(data_pd)
-        
-#         if mode == tf.estimator.ModeKeys.TRAIN:
-#             num_epochs = None
-#             dataset = dataset.shuffle(buffer_size = 10*batch_size)
-#         else:
-#             num_epochs = 1
-        
-#         dataset = dataset.repeat(num_epochs).batch(batch_size)
-#         batch_features, batch_labels = dataset.make_one_shot_iterator().get_next()
-     
-#         return batch_features, batch_labels
-    
     data_pd = read_csv(project, bucket, path)
     dataset = add_engineered(data_pd)
     print(dataset.info())
@@ -106,28 +63,10 @@ def read_dataset(project, bucket, path, mode, batch_size=256):
             x=dataset[['text', 'link', 'tag', 'question', 'word_count', 'verb_count']], y=dataset['label'],
             num_epochs=1, shuffle=False,
             batch_size=batch_size)
-        #num_epochs = 1
-    #return _input_fn
-        
+
 
         
 def add_engineered(data_pd):
-#     # Get plain text
-#     plain_text = features['text']
-#     print(plain_text)
-#     print(type(plain_text))
-#     plain_text = tf.map_fn(pp.replace_qs, plain_text)
-    
-#     features['link'] = tf.map_fn(pp.check_for_link, plain_text, dtype=tf.int32)
-#     features['tag'] = tf.map_fn(pp.check_for_link, plain_text, dtype=tf.int32)
-#     features['question'] = tf.map_fn(pp.check_for_q, plain_text, dtype=tf.int32)
-    
-#     plain_text = tf.map_fn(pp.remove_link, plain_text)
-#     plain_text = tf.map_fn(pp.remove_tags, plain_text)
-#     plain_text = tf.map_fn(pp.drop_emojis, plain_text)
-    
-#     features['word_count'] = tf.map_fn(pp.count_words, plain_text, dtype=tf.int32)
-#     features['verb_count'] = tf.map_fn(pp.count_verbs, plain_text, dtype=tf.int32)
 
     data_pd['text'] = data_pd['text'].apply(pp.replace_qs)
     data_pd['link'] = data_pd['text'].apply(pp.check_for_link)
@@ -142,11 +81,6 @@ def add_engineered(data_pd):
     
     return data_pd
     
-    
-#     features = {col:tf.cast(data_pd[col], tf.int32) for col in INPUT_COLUMNS}
-#     features['text'] = tf.cast(data_pd['text'], tf.string)
-#     labels = tf.cast(data_pd['label'], tf.int32)
-#     return tf.data.Dataset.from_tensor_slices((features, labels))
 
 
 def serving_input_fn():
@@ -164,7 +98,7 @@ def serving_input_fn():
 def build_estimator(model_dir, hidden_units):
     # Input columns
     (link, tag, question, word_count, verb_count) = TF_INPUT_COLUMNS
-    embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/nnlm-en-dim128/1')
+    embedded_text = hub.text_embedding_column('text', 'https://tfhub.dev/google/Wiki-words-500-with-normalization/1')
     features = [embedded_text, link, tag, question, word_count, verb_count]#[text, link, tag, question, word_count, verb_count]
     #print('embedded_text: {}\n'.format(embedded_text))
     print('link: {}\n'.format(link))

@@ -1,3 +1,11 @@
+'''
+Script to label data as one of 5 categories using corresponding key inputs:
+0 : Not a call to action
+1 : Rhetorical question
+2 : Offline questions (questions that people would know the answer to off top)
+3 : Online questions (questions that require data to be looked up)
+4 : Task (an explicit call to action)
+'''
 import numpy as np
 import pandas as pd
 
@@ -19,14 +27,23 @@ def label_docs(docs):
     output_array = np.zeros(count)
 
     for i, doc in enumerate(docs):
-        if doc[1]==1.0:
+        if doc[1]!=0.0:
             print(doc[0])
             while True:
                 response = getch()
-                if response == '[':
+                if response == '0':
                     output_array[i] = 1
                     break
-                elif response == ']':
+                elif response == '1':
+                    output_array[i] = 2
+                    break
+                elif response == '2':
+                    output_array[i] = 2
+                    break
+                elif response == '3':
+                    output_array[i] = 2
+                    break
+                elif response == '4':
                     output_array[i] = 2
                     break
                 elif response == 'q':

@@ -30,7 +30,7 @@ def count_words(message):
 # Doesn't take into account upper case letters, so use after lowercase
 # STRING -> STRING
 def replace_qs(message):
-    return re.sub(r'[a-z0-9]{1}\?[a-z0-9]{1}', (lambda x: x.group(0)[0]+"'"+x.group(0)[2]), message)
+    return re.sub(r'[a-zA-Z0-9]{1}\?[a-zA-Z0-9]{1}', (lambda x: x.group(0)[0]+"'"+x.group(0)[2]), message)
 
 # Function to split a message into a list using NLTK word_tokenize
 # Takes in a message as a string and returns a list of words
