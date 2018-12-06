@@ -9,4 +9,5 @@ gcloud ml-engine local train \
     -- \
     --train_data_path=labelled_train.csv \
     --eval_data_path=labelled_test.csv \
-    --output_dir=${MODEL_DIR}/checkpoints
+    --output_dir=${MODEL_DIR}/checkpoints \
+    --train_steps=1000

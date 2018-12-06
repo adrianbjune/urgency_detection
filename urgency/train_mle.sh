@@ -4,7 +4,7 @@ SCALE_TIER=BASIC_GPU
 BUCKET=gs://urgency-detection
 OUTDIR=${BUCKET}/${JOB_NAME}             # training output dir
 MODEL_DIR=${PWD} # loc of module and scripts
-REGION=us-central1
+REGION=us-east1
 
 # Submit job
 gcloud ml-engine jobs submit training $JOB_NAME \
@@ -15,6 +15,7 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --region=${REGION} \
     -- \
     --output_dir=$OUTDIR/output \
-    --train_steps=100000 \
+    --train_steps=5000 \
     --train_data_path=labelled_train.csv \
-    --eval_data_path=labelled_test.csv 
+    --eval_data_path=labelled_test.csv \
+    --hidden_units="128 32 4"

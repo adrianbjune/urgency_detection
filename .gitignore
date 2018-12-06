@@ -3,9 +3,12 @@ data/*
 urgency/data/*
 */checkpoints/*
 *.ipynb_checkpoints/*
+*/.ipynb_checkpoints/*
 eda.ipynb
 sql_formatting.ipynb
 spark.ipynb
 keras.ipynb
 tensorflow.ipynb
+sklearn.ipynb
+*/tf_testing.ipynb
 .env
